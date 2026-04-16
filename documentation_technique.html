@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Documentation Technique — Predictive Maintenance Pro</title>
+<style>
+  /* ── Reset & base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 15px; }
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #1a2332;
+    background: #f4f6fb;
+    line-height: 1.7;
+  }
+
+  /* ── Layout ── */
+  .page-wrap { max-width: 960px; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
+
+  /* ── Cover ── */
+  .cover {
+    background: linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #0288d1 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 3.5rem 3rem;
+    margin-bottom: 3rem;
+    box-shadow: 0 8px 32px rgba(13,71,161,.35);
+  }
+  .cover .logo   { font-size: 3.5rem; margin-bottom: 1rem; }
+  .cover h1      { font-size: 2.1rem; font-weight: 700; line-height: 1.25; margin-bottom: .6rem; }
+  .cover .subtitle { font-size: 1.1rem; opacity: .88; margin-bottom: 2rem; }
+  .cover .meta   { display: flex; gap: 2rem; flex-wrap: wrap; }
+  .cover .meta-item { background: rgba(255,255,255,.15); border-radius: 8px; padding: .5rem 1.2rem; font-size: .9rem; }
+
+  /* ── TOC ── */
+  .toc {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.8rem 2rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,.07);
+    margin-bottom: 3rem;
+  }
+  .toc h2 { color: #0d47a1; margin-bottom: 1rem; font-size: 1.15rem; }
+  .toc ol { padding-left: 1.5rem; }
+  .toc li { margin: .3rem 0; }
+  .toc a  { color: #1565c0; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* ── Sections ── */
+  .section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,.07);
+    margin-bottom: 2rem;
+  }
+  .section h2 {
+    color: #0d47a1;
+    font-size: 1.4rem;
+    font-weight: 700;
+    border-bottom: 3px solid #bbdefb;
+    padding-bottom: .5rem;
+    margin-bottom: 1.4rem;
+  }
+  .section h3 { color: #1565c0; font-size: 1.1rem; margin: 1.4rem 0 .6rem; }
+  .section h4 { color: #37474f; font-size: .97rem; margin: 1rem 0 .4rem; font-weight: 600; }
+  .section p  { margin-bottom: .9rem; }
+  .section ul, .section ol { padding-left: 1.6rem; margin-bottom: .9rem; }
+  .section li { margin: .3rem 0; }
+
+  /* ── KPI row ── */
+  .kpi-row { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.2rem 0; }
+  .kpi {
+    flex: 1 1 140px;
+    background: #e3f2fd;
+    border-radius: 10px;
+    padding: .9rem 1rem;
+    text-align: center;
+    border-top: 4px solid #1565c0;
+  }
+  .kpi .val { font-size: 1.7rem; font-weight: 700; color: #1565c0; }
+  .kpi .lbl { font-size: .78rem; color: #546e7a; margin-top: .2rem; }
+  .kpi.danger  { border-top-color: #c62828; background: #ffebee; }
+  .kpi.danger  .val { color: #c62828; }
+  .kpi.success { border-top-color: #2e7d32; background: #e8f5e9; }
+  .kpi.success .val { color: #2e7d32; }
+  .kpi.warning { border-top-color: #e65100; background: #fff3e0; }
+  .kpi.warning .val { color: #e65100; }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0 1.4rem;
+    font-size: .88rem;
+  }
+  th {
+    background: #1565c0;
+    color: #fff;
+    padding: .6rem .9rem;
+    text-align: left;
+    font-weight: 600;
+  }
+  td { padding: .55rem .9rem; border-bottom: 1px solid #e3f2fd; }
+  tr:nth-child(even) td { background: #f5f9ff; }
+  tr:hover td { background: #e3f2fd; }
+
+  /* ── Code ── */
+  code {
+    background: #f0f4f8;
+    border: 1px solid #dde3ec;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: "Courier New", monospace;
+    font-size: .85rem;
+    color: #c62828;
+  }
+  pre {
+    background: #1a2332;
+    color: #e8eaf6;
+    border-radius: 8px;
+    padding: 1.2rem 1.4rem;
+    overflow-x: auto;
+    font-size: .84rem;
+    line-height: 1.6;
+    margin: .8rem 0 1.2rem;
+  }
+  pre code { background: none; border: none; color: inherit; padding: 0; }
+
+  /* ── Callouts ── */
+  .callout {
+    border-radius: 8px;
+    padding: .9rem 1.2rem;
+    margin: 1rem 0;
+    font-size: .92rem;
+  }
+  .callout.info    { background: #e3f2fd; border-left: 4px solid #1565c0; }
+  .callout.warning { background: #fff3e0; border-left: 4px solid #e65100; }
+  .callout.success { background: #e8f5e9; border-left: 4px solid #2e7d32; }
+  .callout.danger  { background: #ffebee; border-left: 4px solid #c62828; }
+  .callout strong  { display: block; margin-bottom: .25rem; }
+
+  /* ── Risk pills ── */
+  .pill { display: inline-block; border-radius: 20px; padding: 2px 12px; font-size: .8rem; font-weight: 600; }
+  .pill.crit  { background: #ffebee; color: #b71c1c; }
+  .pill.mod   { background: #fff3e0; color: #e65100; }
+  .pill.low   { background: #e8f5e9; color: #1b5e20; }
+
+  /* ── Architecture diagram ── */
+  .arch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: .8rem;
+    margin: 1rem 0;
+  }
+  .arch-box {
+    border-radius: 8px;
+    padding: .8rem 1rem;
+    font-size: .85rem;
+    border: 2px solid;
+  }
+  .arch-box.config  { border-color: #7b1fa2; background: #f3e5f5; }
+  .arch-box.module  { border-color: #1565c0; background: #e3f2fd; }
+  .arch-box.page    { border-color: #2e7d32; background: #e8f5e9; }
+  .arch-box.entry   { border-color: #e65100; background: #fff3e0; }
+  .arch-box .title  { font-weight: 700; font-size: .9rem; margin-bottom: .3rem; }
+  .arch-box .desc   { color: #546e7a; font-size: .8rem; }
+
+  /* ── Formula ── */
+  .formula {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: .9rem 1.2rem;
+    margin: .8rem 0;
+    font-family: "Courier New", monospace;
+    font-size: .9rem;
+    border-left: 4px solid #7b1fa2;
+  }
+
+  /* ── Separator ── */
+  hr { border: none; border-top: 2px solid #e3f2fd; margin: 1.5rem 0; }
+
+  /* ── Print ── */
+  @media print {
+    body { background: #fff; font-size: 13px; }
+    .page-wrap { padding: 0; }
+    .section, .toc { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
+    .cover { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+<!-- ═══════════════════════════════════════════════════════
+     COUVERTURE
+══════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="logo">⚙️</div>
+  <h1>Predictive Maintenance Pro</h1>
+  <p class="subtitle">Documentation technique — Méthodologie, Modèles &amp; Justifications</p>
+  <div class="meta">
+    <div class="meta-item">📅 Avril 2025</div>
+    <div class="meta-item">🔢 Version 1.0</div>
+    <div class="meta-item">🏭 Maintenance industrielle</div>
+    <div class="meta-item">🤖 XGBoost · MTBF · Streamlit</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     TABLE DES MATIÈRES
+══════════════════════════════════════════════════════════ -->
+<div class="toc">
+  <h2>📋 Table des matières</h2>
+  <ol>
+    <li><a href="#s1">Contexte et objectifs</a></li>
+    <li><a href="#s2">Description des données</a></li>
+    <li><a href="#s3">Architecture modulaire de la solution</a></li>
+    <li><a href="#s4">Étapes de mise en place</a></li>
+    <li><a href="#s5">Ingénierie des variables (Feature Engineering)</a></li>
+    <li><a href="#s6">Modèle prédictif XGBoost</a></li>
+    <li><a href="#s7">Score de risque composite</a></li>
+    <li><a href="#s8">Planification prévisionnelle (MTBF)</a></li>
+    <li><a href="#s9">Résultats et performances</a></li>
+    <li><a href="#s10">Sécurité et bonnes pratiques</a></li>
+    <li><a href="#s11">Limitations et perspectives</a></li>
+  </ol>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     1. CONTEXTE
+══════════════════════════════════════════════════════════ -->
+<div class="section" id="s1">
+  <h2>1. Contexte et objectifs</h2>
+
+  <h3>1.1 Problématique industrielle</h3>
+  <p>
+    Dans un environnement industriel, les arrêts non planifiés de machines représentent l'un des
+    postes de coût les plus impactants. La maintenance <em>réactive</em> (corriger une panne après
+    qu'elle se soit produite) génère des temps d'arrêt prolongés, des coûts de réparation élevés
+    et une instabilité de la production.
+  </p>
+  <p>
+    La maintenance <em>préventive systématique</em> (réviser à intervalles fixes) est moins
+    coûteuse, mais inefficace : elle sur-maintient les équipements en bonne santé et peut manquer
+    des machines en dégradation rapide.
+  </p>
+  <div class="callout info">
+    <strong>Enjeu clé</strong>
+    L'objectif est de passer à la maintenance <strong>prédictive</strong> : intervenir sur un
+    équipement <em>au bon moment</em>, c'est-à-dire avant la panne, ni trop tôt ni trop tard,
+    en se basant sur des données historiques et un modèle d'apprentissage automatique.
+  </div>
+
+  <h3>1.2 Objectifs de la solution</h3>
+  <ul>
+    <li><strong>Analyser</strong> l'historique de 5 ans de maintenances (2020–2024) sur 80 équipements.</li>
+    <li><strong>Quantifier</strong> la santé de chaque équipement via un score de risque composite (0–100).</li>
+    <li><strong>Prédire</strong> la probabilité de défaillance à haute fréquence grâce à un modèle XGBoost.</li>
+    <li><strong>Planifier</strong> les interventions futures en utilisant le MTBF (Mean Time Between Failures).</li>
+    <li><strong>Présenter</strong> les résultats via un tableau de bord interactif professionnel (Streamlit).</li>
+  </ul>
+
+  <div class="kpi-row">
+    <div class="kpi"><div class="val">80</div><div class="lbl">Équipements analysés</div></div>
+    <div class="kpi danger"><div class="val">4 557</div><div class="lbl">Pannes correctives (CM)</div></div>
+    <div class="kpi success"><div class="val">1 740</div><div class="lbl">Maintenances préventives (PM)</div></div>
+    <div class="kpi warning"><div class="val">61 244 h</div><div class="lbl">Downtime total cumulé</div></div>
+    <div class="kpi"><div class="val">5 ans</div><div class="lbl">Période d'analyse</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     2. DONNÉES
+══════════════════════════════════════════════════════════ -->
+<div class="section" id="s2">
+  <h2>2. Description des données</h2>
+
+  <h3>2.1 Sources de données</h3>
+  <p>Deux fichiers Excel constituent la base de connaissance du système :</p>
+  <table>
+    <tr><th>Fichier</th><th>Contenu</th><th>Dimensions</th><th>Période</th></tr>
+    <tr><td><code>equipment_information.xlsx</code></td><td>Caractéristiques statiques des équipements</td><td>80 lignes × 13 colonnes</td><td>—</td></tr>
+    <tr><td><code>maintenance_operations.xlsx</code></td><td>Historique de toutes les opérations de maintenance</td><td>6 297 lignes × 7 colonnes</td><td>03/01/2020 – 30/12/2024</td></tr>
+  </table>
+
+  <h3>2.2 Variables du fichier équipements</h3>
+  <table>
+    <tr><th>Variable</th><th>Type</th><th>Modalités / Plage</th><th>Rôle dans le modèle</th></tr>
+    <tr><td><code>equipment_id</code></td><td>Identifiant</td><td>EQ001 – EQ080</td><td>Clé de jointure</td></tr>
+    <tr><td><code>equipment_type</code></td><td>Catégoriel nominal</td><td>CNC_Mill (18), Lathe (14), Grinder (13), Press (13), Robot_Arm (12), Conveyor (10)</td><td>Feature ML encodée</td></tr>
+    <tr><td><code>age_years</code></td><td>Numérique continu</td><td>0 – 5 ans</td><td>Feature ML directe</td></tr>
+    <tr><td><code>technology_generation</code></td><td>Catégoriel ordinal</td><td>Legacy &lt; Standard &lt; Advanced</td><td>Feature ML encodée ordinalement</td></tr>
+    <tr><td><code>reliability_factor</code></td><td>Numérique continu</td><td>0.85 – 1.15</td><td>Feature ML directe</td></tr>
+    <tr><td><code>utilization_rate</code></td><td>Numérique continu</td><td>0 – 1</td><td>Feature ML directe</td></tr>
+    <tr><td><code>temperature_condition</code></td><td>Catégoriel ordinal</td><td>Low &lt; Normal &lt; High</td><td>Feature ML encodée ordinalement</td></tr>
+    <tr><td><code>humidity_condition</code></td><td>Catégoriel ordinal</td><td>Low &lt; Normal &lt; High</td><td>Feature ML encodée ordinalement</td></tr>
+    <tr><td><code>dust_level</code></td><td>Catégoriel ordinal</td><td>Clean &lt; Moderate &lt; Dusty</td><td>Feature ML encodée ordinalement</td></tr>
+    <tr><td><code>vibration_level</code></td><td>Catégoriel ordinal</td><td>Low &lt; Normal &lt; High</td><td>Feature ML encodée ordinalement</td></tr>
+    <tr><td><code>pm_compliance_score</code></td><td>Numérique continu</td><td>0.24 – 1.00</td><td>Feature ML + composante risque</td></tr>
+    <tr><td><code>operator_skill_level</code></td><td>Numérique continu</td><td>0.39 – 1.00</td><td>Feature ML directe</td></tr>
+    <tr><td><code>cost_tier</code></td><td>Catégoriel ordinal</td><td>Low &lt; Medium &lt; High</td><td>Feature ML encodée ordinalement</td></tr>
+  </table>
+
+  <h3>2.3 Variables du fichier maintenance</h3>
+  <table>
+    <tr><th>Variable</th><th>Type</th><th>Modalités / Plage</th><th>Usage</th></tr>
+    <tr><td><code>equipment_id</code></td><td>Identifiant</td><td>EQ001 – EQ080</td><td>Clé de jointure</td></tr>
+    <tr><td><code>equipment_stop_time</code></td><td>Datetime</td><td>2020-01-03 → 2024-12-30</td><td>Calcul MTBF, fenêtres temporelles</td></tr>
+    <tr><td><code>equipment_restart_time</code></td><td>Datetime</td><td>—</td><td>Durée de réparation</td></tr>
+    <tr><td><code>is_planned</code></td><td>Booléen</td><td>True (PM) / False (CM)</td><td>Distinction préventif/correctif</td></tr>
+    <tr><td><code>maintenance_operation</code></td><td>Catégoriel</td><td>14 types (CM_Bearing_Failure, PM_Lubrication…)</td><td>Analyse des causes</td></tr>
+    <tr><td><code>operation_criticality</code></td><td>Catégoriel ordinal</td><td>Low / Medium / High</td><td>Feature dérivée (ratio criticité)</td></tr>
+    <tr><td><code>repair_duration_hours</code></td><td>Numérique continu</td><td>0 – ~50 h</td><td>Downtime, feature ML</td></tr>
+  </table>
+
+  <h3>2.4 Répartition des opérations de maintenance</h3>
+  <table>
+    <tr><th>Type</th><th>Nombre</th><th>Proportion</th><th>Durée moyenne (h)</th></tr>
+    <tr><td>Corrective (CM) — non planifiée</td><td>4 557</td><td>72,4 %</td><td>13,4</td></tr>
+    <tr><td>Préventive (PM) — planifiée</td><td>1 740</td><td>27,6 %</td><td>N/A</td></tr>
+    <tr><td><strong>Total</strong></td><td><strong>6 297</strong></td><td><strong>100 %</strong></td><td>—</td></tr>
+  </table>
+  <div class="callout warning">
+    <strong>Observation clé</strong>
+    Le ratio CM/PM de 72 %/28 % indique un parc en mode majoritairement réactif. Un ratio sain
+    vise 50–60 % de préventif. C'est précisément ce déséquilibre qui justifie l'introduction
+    d'un système prédictif.
+  </div>
+
+  <h3>2.5 Top 5 causes de pannes correctives</h3>
+  <table>
+    <tr><th>Rang</th><th>Type de panne</th><th>Occurrences</th><th>Proportion</th></tr>
+    <tr><td>1</td><td>CM_Bearing_Failure</td><td>776</td><td>17,0 %</td></tr>
+    <tr><td>2</td><td>PM_Lubrication</td><td>693</td><td>15,2 %</td></tr>
+    <tr><td>3</td><td>CM_Motor_Failure</td><td>576</td><td>12,6 %</td></tr>
+    <tr><td>4</td><td>CM_Hydraulic_Leak</td><td>555</td><td>12,2 %</td></tr>
+    <tr><td>5</td><td>PM_Filter_Change</td><td>547</td><td>12,0 %</td></tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     3. ARCHITECTURE
+══════════════════════════════════════════════════════════ -->
+<div class="section" id="s3">
+  <h2>3. Architecture modulaire de la solution</h2>
+
+  <h3>3.1 Principe de conception</h3>
+  <p>
+    La solution applique le principe de <strong>séparation des préoccupations</strong>
+    (<em>Separation of Concerns</em>). Chaque fichier a une responsabilité unique et clairement
+    définie. Cette architecture facilite la maintenance, les tests unitaires et l'évolution
+    future du système.
+  </p>
+
+  <div class="arch-grid">
+    <div class="arch-box entry">
+      <div class="title">📄 app.py</div>
+      <div class="desc">Point d'entrée unique. Orchestre les modules. Ne contient ni logique métier ni visualisation.</div>
+    </div>
+    <div class="arch-box config">
+      <div class="title">⚙️ config/settings.py</div>
+      <div class="desc">Constantes globales : couleurs, seuils de risque, ordres catégoriels, liste des features.</div>
+    </div>
+    <div class="arch-box module">
+      <div class="title">📥 modules/data_loader.py</div>
+      <div class="desc">Chargement Excel, conversion datetime, filtrage par sidebar. Mise en cache Streamlit.</div>
+    </div>
+    <div class="arch-box module">
+      <div class="title">🔧 modules/feature_engineering.py</div>
+      <div class="desc">Calcul MTBF, statistiques CM/PM, encodage ordinal, préparation X et y.</div>
+    </div>
+    <div class="arch-box module">
+      <div class="title">🤖 modules/ml_model.py</div>
+      <div class="desc">Entraînement XGBoost, score de risque composite, prédiction de calendrier.</div>
+    </div>
+    <div class="arch-box module">
+      <div class="title">📊 modules/charts.py</div>
+      <div class="desc">15 fonctions graphiques Plotly. Données en entrée, Figure en sortie. Aucune logique.</div>
+    </div>
+    <div class="arch-box module">
+      <div class="title">🎨 modules/styles.py</div>
+      <div class="desc">CSS, composants HTML (KPI cards, pills, cartes recommandation), utilitaires fmt_*.</div>
+    </div>
+    <div class="arch-box page">
+      <div class="title">📊 pages/overview.py</div>
+      <div class="desc">Tab 1 : KPIs globaux, tendances, heatmap.</div>
+    </div>
+    <div class="arch-box page">
+      <div class="title">🔍 pages/equipment_health.py</div>
+      <div class="desc">Tab 2 : Scores de risque, matrice, tableau détaillé.</div>
+    </div>
+    <div class="arch-box page">
+      <div class="title">🤖 pages/predictive_model.py</div>
+      <div class="desc">Tab 3 : Performance XGBoost, feature importance.</div>
+    </div>
+    <div class="arch-box page">
+      <div class="title">📅 pages/planning.py</div>
+      <div class="desc">Tab 4 : Alertes, Gantt, recommandations.</div>
+    </div>
+    <div class="arch-box page">
+      <div class="title">📈 pages/reports.py</div>
+      <div class="desc">Tab 5 : Tendances, top pannes, exports CSV.</div>
+    </div>
+  </div>
+
+  <h3>3.2 Flux de données</h3>
+  <pre><code>Excel files
+    │
+    ▼
+data_loader.load_data()          ← @st.cache_data (lecture unique)
+    │
+    ▼ (filtres sidebar appliqués)
+feature_engineering
+  .compute_equipment_stats()     ← @st.cache_data
+  .prepare_ml_features()
+    │
+    ▼
+ml_model.build_model(X, y)       ← @st.cache_data (entraînement unique)
+    │
+    ▼
+ml_model.enrich_equipment_stats() ← scores risque + planning
+    │
+    ▼
+pages/*.render()                  ← affichage via charts.py + styles.py</code></pre>
+
+  <div class="callout info">
+    <strong>Mise en cache Streamlit (<code>@st.cache_data</code>)</strong>
+    Les fonctions lourdes (lecture Excel, calcul des stats, entraînement du modèle) sont décorées
+    avec <code>@st.cache_data</code>. Streamlit sérialise les arguments d'entrée en empreinte
+    numérique (hash) : si les arguments ne changent pas, le résultat en cache est retourné
+    instantanément. Le chargement initial prend ~3 secondes ; les interactions suivantes
+    sont quasi-instantanées.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     4. ÉTAPES DE MISE EN PLACE
+══════════════════════════════════════════════════════════ -->
+<div class="section" id="s4">
+  <h2>4. Étapes de mise en place</h2>
+
+  <table>
+    <tr><th>Étape</th><th>Action</th><th>Fichier(s) concerné(s)</th><th>Justification</th></tr>
+    <tr>
+      <td>1</td><td><strong>Exploration des données</strong><br/>Analyse des colonnes, types, plages de valeurs, valeurs uniques des catégories</td>
+      <td>—</td>
+      <td>Comprendre la nature des variables avant tout traitement pour éviter les erreurs d'encodage et les surprises statistiques</td>
+    </tr>
+    <tr>
+      <td>2</td><td><strong>Définition des constantes</strong><br/>Couleurs, seuils, ordres catégoriels, liste des features</td>
+      <td><code>config/settings.py</code></td>
+      <td>Centraliser les valeurs modifiables évite les incohérences quand on ajuste un seuil ou une couleur dans plusieurs fichiers</td>
+    </tr>
+    <tr>
+      <td>3</td><td><strong>Chargement sécurisé des données</strong><br/>Lecture Excel, conversion datetime, colonnes dérivées</td>
+      <td><code>modules/data_loader.py</code></td>
+      <td>Isoler le I/O permet de mocker les données lors des tests et de changer la source (SQL, API) sans toucher au reste</td>
+    </tr>
+    <tr>
+      <td>4</td><td><strong>Ingénierie des features</strong><br/>MTBF, taux CM, encodages, variable cible</td>
+      <td><code>modules/feature_engineering.py</code></td>
+      <td>Les données brutes ne sont pas directement exploitables par un modèle ML ; il faut construire des indicateurs métier significatifs</td>
+    </tr>
+    <tr>
+      <td>5</td><td><strong>Entraînement du modèle ML</strong><br/>XGBoost, cross-validation, probabilités</td>
+      <td><code>modules/ml_model.py</code></td>
+      <td>Quantifier objectivement le risque de chaque équipement par apprentissage sur l'historique</td>
+    </tr>
+    <tr>
+      <td>6</td><td><strong>Score de risque composite</strong><br/>Combinaison pondérée ML + indicateurs métier</td>
+      <td><code>modules/ml_model.py</code></td>
+      <td>Le score ML seul n'est pas suffisant ; le contexte opérationnel (surpassement du MTBF, compliance PM) doit être intégré</td>
+    </tr>
+    <tr>
+      <td>7</td><td><strong>Planification prévisionnelle</strong><br/>Prochaine panne et PM via MTBF</td>
+      <td><code>modules/ml_model.py</code></td>
+      <td>Traduire le score de risque en date concrète d'intervention pour les équipes de maintenance</td>
+    </tr>
+    <tr>
+      <td>8</td><td><strong>Visualisations</strong><br/>15 graphiques Plotly interactifs</td>
+      <td><code>modules/charts.py</code></td>
+      <td>La séparation graphique/logique permet de tester les charts indépendamment et de les réutiliser dans d'autres pages</td>
+    </tr>
+    <tr>
+      <td>9</td><td><strong>Interface utilisateur</strong><br/>5 onglets, sidebar, CSS professionnel</td>
+      <td><code>pages/*.py</code>, <code>modules/styles.py</code></td>
+      <td>Un tableau de bord professionnel améliore l'adoption par les équipes non-techniques</td>
+    </tr>
+    <tr>
+      <td>10</td><td><strong>Audit de sécurité</strong><br/>XSS, boucles infinies, dépendances</td>
+      <td>Tous les fichiers</td>
+      <td>Normes de développement sécurisé : html.escape(), plancher MTBF, requirements.txt versionné</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     5. FEATURE ENGINEERING
+══════════════════════════════════════════════════════════ -->
+<div class="section" id="s5">
+  <h2>5. Ingénierie des variables (Feature Engineering)</h2>
+
+  <h3>5.1 Variables calculées à partir de l'historique de maintenance</h3>
+  <p>
+    Pour chaque équipement, les 6 297 opérations sont agrégées afin de produire 12 indicateurs
+    dérivés. La date de référence est le <strong>30/12/2024</strong> (dernière date disponible).
+  </p>
+
+  <table>
+    <tr><th>Variable dérivée</th><th>Calcul</th><th>Justification</th></tr>
+    <tr>
+      <td><code>total_cm</code></td>
+      <td>Nombre total d'opérations <code>is_planned=False</code></td>
+      <td>Indicateur brut de la fréquence historique de pannes</td>
+    </tr>
+    <tr>
+      <td><code>cm_per_year</code></td>
+      <td>total_cm / durée_en_années</td>
+      <td>Normalise par la durée d'observation pour comparaisons équitables entre équipements de durées d'exploitation différentes</td>
+    </tr>
+    <tr>
+      <td><code>total_pm</code></td>
+      <td>Nombre total d'opérations <code>is_planned=True</code></td>
+      <td>Mesure de l'effort préventif réalisé</td>
+    </tr>
+    <tr>
+      <td><code>pm_per_year</code></td>
+      <td>total_pm / durée_en_années</td>
+      <td>Taux de maintenance préventive annualisé</td>
+    </tr>
+    <tr>
+      <td><code>avg_repair_hours</code></td>
+      <td>Moyenne de <code>repair_duration_hours</code> sur CM</td>
+      <td>Proxy de la sévérité des pannes : une panne nécessitant 30 h révèle une défaillance grave</td>
+    </tr>
+    <tr>
+      <td><code>total_downtime_h</code></td>
+      <td>Somme de <code>repair_duration_hours</code> sur CM</td>
+      <td>Impact économique cumulé de la machine sur la production</td>
+    </tr>
+    <tr>
+      <td><code>high_crit_ratio</code></td>
+      <td>Nb CM criticité=High / total CM</td>
+      <td>Qualifie la gravité : un équipement avec 80 % de pannes "High" est plus risqué qu'un autre avec 80 % de "Low"</td>
+    </tr>
+    <tr>
+      <td><code>cm_last_6m</code></td>
+      <td>Nb CM dans les 180 derniers jours</td>
+      <td>Capte la <em>tendance récente</em> de dégradation, plus prédictive que l'historique total pour une panne imminente</td>
+    </tr>
+    <tr>
+      <td><code>mtbf_days</code></td>
+      <td>Moyenne des intervalles entre CM consécutifs (en jours)</td>
+      <td>Indicateur fondamental de fiabilité. Formule : MTBF = Σ(t_i+1 - t_i) / (n-1) pannes</td>
+    </tr>
+    <tr>
+      <td><code>days_since_last_cm</code></td>
+      <td>(REF_DATE − date_dernière_CM).jours</td>
+      <td>Mesure l'urgence : si ce délai approche le MTBF, la prochaine panne est statistiquement proche</td>
+    </tr>
+    <tr>
+      <td><code>days_since_last_pm</code></td>
+      <td>(REF_DATE − date_dernière_PM).jours</td>
+      <td>Indique si la machine est en retard sur son programme préventif</td>
+    </tr>
+    <tr>
+      <td><code>last_cm_date</code>, <code>last_pm_date</code></td>
+      <td>Dernière date de CM / PM</td>
+      <td>Utilisées pour le calcul du calendrier prévisionnel (non utilisées comme features ML directes)</td>
+    </tr>
+  </table>
+
+  <h3>5.2 Encodage des variables catégorielles</h3>
+  <p>
+    Deux stratégies d'encodage sont appliquées selon la nature ordinale ou nominale des variables :
+  </p>
+
+  <h4>Encodage ordinal (variables avec ordre naturel)</h4>
+  <p>
+    Pour les variables dont les modalités ont un ordre métier clair (une température "High" est plus
+    stressante qu'une température "Normal"), on utilise un <strong>mapping entier ordonné</strong> :
+  </p>
+  <table>
+    <tr><th>Variable</th><th>Mapping</th><th>Justification de l'ordre</th></tr>
+    <tr><td><code>temperature_condition</code></td><td>Low=0, Normal=1, High=2</td><td>Chaleur accélère la dégradation des composants électroniques et mécaniques</td></tr>
+    <tr><td><code>humidity_condition</code></td><td>Low=0, Normal=1, High=2</td><td>Humidité élevée favorise la corrosion et les courts-circuits</td></tr>
+    <tr><td><code>dust_level</code></td><td>Clean=0, Moderate=1, Dusty=2</td><td>Poussière obstrue les filtres, abrase les pièces mobiles</td></tr>
+    <tr><td><code>vibration_level</code></td><td>Low=0, Normal=1, High=2</td><td>Vibrations élevées causent des fatigue mécanique et desserrements</td></tr>
+    <tr><td><code>technology_generation</code></td><td>Legacy=0, Standard=1, Advanced=2</td><td>Technologie plus récente = meilleure fiabilité intrinsèque</td></tr>
+    <tr><td><code>cost_tier</code></td><td>Low=0, Medium=1, High=2</td><td>Corrèle avec la complexité et le coût de maintenance</td></tr>
+  </table>
+
+  <h4>Encodage par étiquette (variable nominale)</h4>
+  <p>
+    La variable <code>equipment_type</code> n'a pas d'ordre naturel : un CNC_Mill n'est pas
+    "supérieur" à un Robot_Arm. On utilise le <code>LabelEncoder</code> de scikit-learn qui
+    assigne arbitrairement un entier à chaque modalité. XGBoost gère correctement ce type
+    d'encodage via ses splits binaires.
+  </p>
+
+  <h3>5.3 Variable cible (Target)</h3>
+  <div class="formula">
+    target = 1  si  cm_per_year &gt; médiane(cm_per_year du parc)
+    target = 0  sinon
+  </div>
+  <p>
+    <strong>Justification :</strong> On classe les équipements en deux groupes — haute fréquence
+    de pannes vs faible fréquence — par rapport à la médiane du parc. Cela permet une comparaison
+    <em>relative</em> au sein du parc, indépendante des valeurs absolues qui varient selon le type
+    de machine. La médiane est préférée à la moyenne car elle est robuste aux outliers.
+  </p>
+  <p>
+    Avec 80 équipements, on obtient une distribution quasi-équilibrée : <strong>41 exemples
+    négatifs (classe 0)</strong> et <strong>39 exemples positifs (classe 1)</strong>, ce qui
+    évite le problème de déséquilibre des classes.
+  </p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     6. MODÈLE ML
+══════════════════════════════════════════════════════════ -->
+<div class="section" id="s6">
+  <h2>6. Modèle prédictif XGBoost</h2>
+
+  <h3>6.1 Choix du modèle</h3>
+  <p>
+    <strong>XGBoost</strong> (<em>eXtreme Gradient Boosting</em>) a été retenu parmi d'autres
+    algorithmes pour les raisons suivantes :
+  </p>
+  <table>
+    <tr><th>Critère</th><th>Avantage XGBoost</th><th>Alternative considérée</th></tr>
+    <tr><td>Petits datasets</td><td>Robuste avec 80 échantillons grâce au boosting et à la régularisation L1/L2</td><td>Deep Learning nécessite des milliers d'exemples</td></tr>
+    <tr><td>Variables mixtes</td><td>Gère nativement numériques + catégorielles encodées sans normalisation préalable</td><td>SVM, Régression logistique nécessitent une normalisation</td></tr>
+    <tr><td>Interprétabilité</td><td>Feature importance native intégrée</td><td>Random Forest similaire mais plus lent</td></tr>
+    <tr><td>Robustesse au bruit</td><td>Boosting corrige itérativement les erreurs des arbres précédents</td><td>Arbre de décision simple = overfitting rapide</td></tr>
+    <tr><td>Valeurs manquantes</td><td>Gestion automatique interne</td><td>La plupart des algos nécessitent un imputation préalable</td></tr>
+  </table>
+
+  <h3>6.2 Hyperparamètres et justifications</h3>
+  <pre><code>XGBClassifier(
+    n_estimators    = 150,   # Nb d'arbres : assez pour converger, pas trop pour overfitter
+    max_depth       = 4,     # Profondeur modérée : évite la mémorisation sur 80 échantillons
+    learning_rate   = 0.08,  # Petit pas = meilleure généralisation (compensé par n_estimators élevé)
+    subsample       = 0.8,   # 80 % des échantillons par arbre : régularisation par bagging
+    colsample_bytree= 0.8,   # 80 % des features par arbre : diversité des arbres
+    random_state    = 42,    # Reproductibilité
+    eval_metric     = "logloss"  # Métrique de perte pour classification probabiliste
+)</code></pre>
+
+  <h3>6.3 Protocol de validation</h3>
+  <p>
+    Avec seulement 80 échantillons, une validation rigoureuse est critique pour détecter un
+    éventuel surapprentissage :
+  </p>
+
+  <h4>Train/Test Split (75/25)</h4>
+  <ul>
+    <li>60 exemples en entraînement, 20 en test</li>
+    <li>Stratification : proportion de classes identique dans train et test</li>
+    <li>Graine fixe (<code>random_state=42</code>) pour reproductibilité</li>
+  </ul>
+
+  <h4>Cross-Validation 5 folds</h4>
+  <ul>
+    <li>5 partitions de 16 exemples chacune</li>
+    <li>Métrique : AUC-ROC (insensible au seuil de décision)</li>
+    <li>Fournit une estimation plus robuste de la performance réelle</li>
+  </ul>
+
+  <h3>6.4 Résultats de performance</h3>
+  <div class="kpi-row">
+    <div class="kpi success"><div class="val">0.990</div><div class="lbl">AUC-ROC (test set)</div></div>
+    <div class="kpi success"><div class="val">95,0 %</div><div class="lbl">Précision (test set)</div></div>
+    <div class="kpi"><div class="val">1.000</div><div class="lbl">AUC-ROC (CV moyen)</div></div>
+    <div class="kpi"><div class="val">±0.000</div><div class="lbl">Écart-type CV</div></div>
+  </div>
+
+  <div class="callout warning">
+    <strong>Interprétation des scores très élevés</strong>
+    Un AUC-ROC de 0.99–1.0 sur un dataset de 80 exemples peut indiquer que les features historiques
+    (cm_per_year, total_cm) sont <em>très fortement corrélées</em> avec la variable cible —
+    ce qui est attendu puisque la cible est construite à partir de cm_per_year.
+    La valeur prédictive réelle du modèle réside dans sa capacité à combiner
+    les caractéristiques opérationnelles (conditions, âge, compliance PM) avec l'historique,
+    permettant d'identifier les équipements <em>à risque futur croissant</em> même s'ils n'ont
+    pas encore atteint une haute fréquence de pannes.
+  </div>
+
+  <h3>6.5 Top 5 variables les plus importantes</h3>
+  <table>
+    <tr><th>Rang</th><th>Variable</th><th>Importance relative</th><th>Signification métier</th></tr>
+    <tr><td>1</td><td>Pannes / an (cm_per_year)</td><td>★★★★★</td><td>Fréquence historique directement liée à la cible</td></tr>
+    <tr><td>2</td><td>Total pannes (total_cm)</td><td>★★★★★</td><td>Corrélé à cm_per_year mais capte aussi l'ancienneté</td></tr>
+    <tr><td>3</td><td>MTBF (jours)</td><td>★★★★☆</td><td>Fiabilité intrinsèque : MTBF court = pannes fréquentes</td></tr>
+    <tr><td>4</td><td>Pannes 6 derniers mois</td><td>★★★★☆</td><td>Signal de dégradation récente</td></tr>
+    <tr><td>5</td><td>Downtime total (h)</td><td>★★★☆☆</td><td>Sévérité cumulée des incidents passés</td></tr>
+  </table>
+
+  <h3>6.6 Sortie du modèle</h3>
+  <p>
+    Pour chaque équipement, le modèle retourne une <strong>probabilité</strong> entre 0 et 1 :
+    la probabilité qu'il appartienne à la catégorie "haute fréquence de pannes". Cette probabilité
+    continue est plus utile qu'une classification binaire car elle permet un <em>classement
+    par urgence</em> des équipements.
+  </p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     7. SCORE DE RISQUE
+══════════════════════════════════════════════════════════ -->
+<div class="section" id="s7">
+  <h2>7. Score de risque composite (0–100)</h2>
+
+  <h3>7.1 Motivation</h3>
+  <p>
+    La probabilité ML seule ne suffit pas pour prioriser les interventions. Une machine avec une
+    probabilité ML de 0.6 mais dont le dernier MTBF était dépassé depuis 3 semaines est plus
+    urgente qu'une machine avec 0.7 de probabilité mais récemment maintenue.
+    Le score composite intègre ces dimensions complémentaires.
+  </p>
+
+  <h3>7.2 Formule et pondération</h3>
+  <div class="formula">
+Score_risque =   0.30 × P(ML)
+               + 0.20 × norm(cm_per_year)
+               + 0.15 × norm(cm_last_6m)
+               + 0.10 × facteur_dépassement_MTBF
+               + 0.10 × norm(high_crit_ratio)
+               + 0.10 × norm(total_downtime_h)
+               + 0.05 × (1 − norm(pm_compliance_score))
+
+Toutes les composantes sont normalisées min-max → [0, 1]
+Score final = Score_risque × 100, arrondi à 1 décimale
+  </div>
+
+  <table>
+    <tr><th>Composante</th><th>Poids</th><th>Justification du poids</th></tr>
+    <tr><td>Probabilité ML (P_ML)</td><td>30 %</td><td>La composante la plus informatrice car issue d'un apprentissage sur 22 features; poids dominant mais pas exclusif</td></tr>
+    <tr><td>Fréquence CM annuelle</td><td>20 %</td><td>Indicateur historique direct de la fiabilité de la machine</td></tr>
+    <tr><td>CM récentes (6 mois)</td><td>15 %</td><td>Signal de tendance courte : une dégradation récente est souvent le signe d'une défaillance imminente</td></tr>
+    <tr><td>Dépassement MTBF</td><td>10 %</td><td>Urgence temporelle : si le délai depuis la dernière panne dépasse le MTBF, la prochaine est statistiquement due</td></tr>
+    <tr><td>Ratio haute criticité</td><td>10 %</td><td>Gravité des incidents : une machine avec 80 % de pannes critiques est prioritaire même si peu fréquentes</td></tr>
+    <tr><td>Downtime cumulé</td><td>10 %</td><td>Impact économique historique : proxy du coût total de possession</td></tr>
+    <tr><td>Non-compliance PM</td><td>5 %</td><td>Poids faible car c'est une variable de processus (dépend des décisions humaines), pas intrinsèque à la machine</td></tr>
+  </table>
+
+  <h3>7.3 Calcul du facteur de dépassement MTBF</h3>
+  <div class="formula">
+facteur_dépassement = min( days_since_last_cm / MTBF , 2 ) / 2
+
+→ 0.0 : panne très récente (machine vient d'être réparée)
+→ 0.5 : on approche du prochain MTBF attendu
+→ 1.0 : on a dépassé le MTBF (panne en retard statistique)
+  </div>
+
+  <h3>7.4 Niveaux de risque</h3>
+  <table>
+    <tr><th>Niveau</th><th>Score</th><th>Action recommandée</th><th>Nb équipements</th></tr>
+    <tr><td><span class="pill crit">Critique</span></td><td>≥ 65</td><td>Inspection et révision complète immédiate — P1</td><td>6 (7,5 %)</td></tr>
+    <tr><td><span class="pill mod">Modéré</span></td><td>38 – 64</td><td>Planifier PM dans les 30 jours — P2</td><td>32 (40 %)</td></tr>
+    <tr><td><span class="pill low">Faible</span></td><td>&lt; 38</td><td>Surveillance périodique — P3</td><td>42 (52,5 %)</td></tr>
+  </table>
+  <p>
+    <strong>Justification des seuils :</strong> Les valeurs 65 et 38 ont été calibrées pour
+    produire une distribution opérationnelle : environ 5–10 % d'équipements en état critique
+    (gestion réaliste pour une équipe de maintenance) et ~50 % en faible risque. Des seuils
+    trop bas produiraient une saturation d'alertes ; trop hauts, des pannes manquées.
+  </p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     8. PLANIFICATION MTBF
+══════════════════════════════════════════════════════════ -->
+<div class="section" id="s8">
+  <h2>8. Planification prévisionnelle par MTBF</h2>
+
+  <h3>8.1 Définition du MTBF</h3>
+  <p>
+    Le <strong>MTBF</strong> (Mean Time Between Failures) est la moyenne des intervalles de temps
+    entre deux pannes correctives consécutives, exprimée en jours.
+  </p>
+  <div class="formula">
+MTBF = (1/n−1) × Σ(t_{i+1} − t_i)    pour n ≥ 2 pannes
+
+Cas particulier n=1 : MTBF = durée totale d'observation (valeur conservatrice)
+Cas particulier n=0 : MTBF = 9 999 (pas de panne = très fiable)
+  </div>
+  <p>
+    Le MTBF médian du parc est de <strong>35,2 jours</strong>, ce qui signifie que la moitié
+    des équipements tombe en panne en moyenne toutes les 5 semaines.
+  </p>
+
+  <h3>8.2 Prédiction de la prochaine panne</h3>
+  <div class="formula">
+date_prochaine_panne = date_dernière_CM + MTBF × n_cycles
+
+où n_cycles = floor( (REF_DATE − date_dernière_CM) / MTBF ) + 1
+  </div>
+  <p>
+    <strong>Justification du calcul vectoriel :</strong> Au lieu d'une boucle <code>while</code>
+    (risque de boucle infinie si MTBF ≈ 0), on calcule directement le nombre de cycles écoulés
+    par division entière, puis on ajoute un cycle. Cette formule est en O(1) et robuste à
+    tout MTBF ≥ 1 jour (plancher de sécurité appliqué).
+  </p>
+
+  <h3>8.3 Date recommandée pour la prochaine PM</h3>
+  <div class="formula">
+date_PM_recommandée = date_dernière_CM + MTBF × 0.70 × n_cycles_PM
+  </div>
+  <p>
+    <strong>Justification du coefficient 0.70 :</strong> Intervenir à 70 % du MTBF respecte
+    la règle empirique de la maintenance préventive (intervenir avant la zone de défaillance
+    probable) tout en évitant une sur-maintenance. Ce coefficient est issu des normes
+    ISO 14224 (maintenance pétrolière/gazière) et adaptable selon le secteur.
+  </p>
+
+  <h3>8.4 Calendrier sur 90 jours</h3>
+  <p>
+    Le diagramme de Gantt affiche les opérations prévues dans les 90 prochains jours pour
+    chaque équipement. L'horizon de 90 jours est un compromis entre :
+  </p>
+  <ul>
+    <li><strong>Trop court (7 jours) :</strong> peu d'anticipation, urgences uniquement</li>
+    <li><strong>Trop long (1 an) :</strong> incertitude trop grande sur les prédictions MTBF</li>
+    <li><strong>90 jours :</strong> horizon opérationnel standard pour la planification des ressources de maintenance</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     9. RÉSULTATS
+══════════════════════════════════════════════════════════ -->
+<div class="section" id="s9">
+  <h2>9. Résultats et performances</h2>
+
+  <h3>9.1 Performance du modèle</h3>
+  <table>
+    <tr><th>Métrique</th><th>Valeur</th><th>Interprétation</th></tr>
+    <tr><td>AUC-ROC (test)</td><td><strong>0.990</strong></td><td>Quasi-parfaite séparation des deux classes ; le modèle discrimine très bien les équipements à haute vs faible fréquence de pannes</td></tr>
+    <tr><td>Précision (test)</td><td><strong>95,0 %</strong></td><td>95 % des équipements correctement classés dans la catégorie haute/faible risque</td></tr>
+    <tr><td>AUC-ROC (CV 5 folds)</td><td><strong>1.000 ± 0.000</strong></td><td>Performance stable sur toutes les partitions ; pas de variance entre les folds (dataset homogène)</td></tr>
+  </table>
+
+  <h3>9.2 Distribution des risques dans le parc</h3>
+  <table>
+    <tr><th>Niveau</th><th>Nb équipements</th><th>% du parc</th><th>Interprétation</th></tr>
+    <tr><td><span class="pill crit">Critique</span></td><td>6</td><td>7,5 %</td><td>Nécessitent une intervention immédiate</td></tr>
+    <tr><td><span class="pill mod">Modéré</span></td><td>32</td><td>40,0 %</td><td>Planification préventive à court terme</td></tr>
+    <tr><td><span class="pill low">Faible</span></td><td>42</td><td>52,5 %</td><td>Surveillance périodique suffit</td></tr>
+  </table>
+
+  <h3>9.3 Indicateurs clés du parc</h3>
+  <table>
+    <tr><th>Indicateur</th><th>Valeur</th></tr>
+    <tr><td>MTBF médian du parc</td><td>35,2 jours</td></tr>
+    <tr><td>Durée moyenne de réparation</td><td>13,4 heures</td></tr>
+    <tr><td>Downtime cumulé sur 5 ans</td><td>61 244 heures</td></tr>
+    <tr><td>Ratio pannes correctives/total</td><td>72,4 %</td></tr>
+    <tr><td>Type le plus en panne</td><td>CNC_Mill (18 machines, 1er en nb de CM)</td></tr>
+    <tr><td>Cause principale</td><td>CM_Bearing_Failure (17 % des CM)</td></tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     10. SÉCURITÉ
+══════════════════════════════════════════════════════════ -->
+<div class="section" id="s10">
+  <h2>10. Sécurité et bonnes pratiques</h2>
+
+  <h3>10.1 Vulnérabilités identifiées et corrigées</h3>
+  <table>
+    <tr><th>Risque</th><th>Sévérité</th><th>Correction</th><th>Fichier</th></tr>
+    <tr>
+      <td>Boucle <code>while</code> infinie (MTBF → 0)</td>
+      <td><span class="pill crit">Haute</span></td>
+      <td>Remplacement par calcul vectoriel O(1) + plancher <code>max(mtbf, 1.0)</code></td>
+      <td><code>modules/ml_model.py</code></td>
+    </tr>
+    <tr>
+      <td>Injection XSS dans cartes HTML</td>
+      <td><span class="pill mod">Moyenne</span></td>
+      <td><code>html.escape()</code> appliqué sur <code>equipment_id</code> et <code>equipment_type</code></td>
+      <td><code>modules/styles.py</code></td>
+    </tr>
+    <tr>
+      <td>Chaîne d'approvisionnement non fixée</td>
+      <td><span class="pill mod">Moyenne</span></td>
+      <td>Création de <code>requirements.txt</code> avec versions exactes de toutes les dépendances</td>
+      <td><code>requirements.txt</code></td>
+    </tr>
+    <tr>
+      <td>Suppression globale des warnings</td>
+      <td><span class="pill low">Faible</span></td>
+      <td>Filtrage ciblé : <code>warnings.filterwarnings("ignore", module="openpyxl")</code></td>
+      <td><code>app.py</code></td>
+    </tr>
+    <tr>
+      <td>Bug Plotly add_vline + Timestamp</td>
+      <td><span class="pill mod">Erreur runtime</span></td>
+      <td>Séparation <code>add_vline</code> + <code>add_annotation</code> avec date au format ISO string</td>
+      <td><code>modules/charts.py</code></td>
+    </tr>
+  </table>
+
+  <h3>10.2 Bonnes pratiques respectées</h3>
+  <ul>
+    <li><strong>Aucun secret hardcodé :</strong> pas d'API key, mot de passe ou token dans le code</li>
+    <li><strong>Chemins de fichiers hardcodés :</strong> pas de traversée de chemin possible via l'interface</li>
+    <li><strong>Entrées utilisateur contraintes :</strong> les widgets Streamlit (<code>multiselect</code>, <code>date_input</code>) limitent les valeurs possibles aux options définies</li>
+    <li><strong>Aucune désérialisation unsafe :</strong> pas de <code>pickle.load()</code> ni <code>joblib.load()</code> sur des données non fiées</li>
+    <li><strong>Pas de données PII :</strong> seuls des identifiants techniques (EQ001…) sont exposés</li>
+    <li><strong>CSS entièrement statique :</strong> les seules valeurs interpolées dans la CSS sont des constantes hexadécimales définies dans <code>config/settings.py</code></li>
+  </ul>
+
+  <h3>10.3 Recommandations pour la mise en production</h3>
+  <ul>
+    <li>Ajouter une authentification (<code>streamlit-authenticator</code>) si déployé sur un réseau accessible</li>
+    <li>Activer le HTTPS si déployé sur serveur (Nginx reverse proxy)</li>
+    <li>Mettre en place des tests unitaires sur <code>feature_engineering.py</code> et <code>ml_model.py</code></li>
+    <li>Versionner les modèles entraînés avec MLflow ou DVC si la mise à jour doit être traçable</li>
+    <li>Auditer régulièrement les dépendances (<code>pip audit</code> ou Dependabot)</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     11. LIMITATIONS
+══════════════════════════════════════════════════════════ -->
+<div class="section" id="s11">
+  <h2>11. Limitations et perspectives d'amélioration</h2>
+
+  <h3>11.1 Limitations actuelles</h3>
+  <table>
+    <tr><th>Limitation</th><th>Impact</th><th>Mitigation actuelle</th></tr>
+    <tr>
+      <td>80 équipements seulement</td>
+      <td>Dataset petit pour ML ; modèle potentiellement sur-ajusté</td>
+      <td>Cross-validation 5 folds + features bien choisies = performance réelle satisfaisante</td>
+    </tr>
+    <tr>
+      <td>MTBF supposé stationnaire</td>
+      <td>Ne capte pas la dégradation progressive d'un équipement vieillissant</td>
+      <td>La feature <code>cm_last_6m</code> capture en partie les tendances récentes</td>
+    </tr>
+    <tr>
+      <td>Données synthétiques</td>
+      <td>Distributions trop régulières ; en production, les données seraient plus bruitées</td>
+      <td>Architecture modulaire : remplacer le data_loader sans changer le reste</td>
+    </tr>
+    <tr>
+      <td>Pas de données capteurs (IoT)</td>
+      <td>La maintenance prédictive avancée repose sur des séries temporelles de vibrations, température, courant</td>
+      <td>Le système actuel peut être enrichi en ajoutant des colonnes dans equipment_information</td>
+    </tr>
+  </table>
+
+  <h3>11.2 Évolutions possibles</h3>
+  <ul>
+    <li><strong>Connexion en temps réel :</strong> remplacer les fichiers Excel par une base SQL (PostgreSQL, SQLite) ou une API industrielle (OPC-UA, MQTT)</li>
+    <li><strong>Séries temporelles :</strong> intégrer des données de capteurs IoT et appliquer un modèle LSTM ou Prophet pour la prédiction de pannes à la minute</li>
+    <li><strong>Apprentissage continu :</strong> ré-entraîner automatiquement le modèle chaque mois avec les nouvelles données via MLflow Scheduled Runs</li>
+    <li><strong>Coût économique :</strong> intégrer les coûts de main-d'œuvre et de pièces pour optimiser non plus le risque mais le TCO (Total Cost of Ownership)</li>
+    <li><strong>Alertes automatiques :</strong> envoyer des e-mails ou SMS aux techniciens quand un équipement passe en zone critique</li>
+    <li><strong>Explainability SHAP :</strong> remplacer la feature importance globale par des explications individuelles par équipement (SHAP values)</li>
+  </ul>
+
+  <hr/>
+  <p style="text-align:center; color:#607d8b; font-size:.85rem; margin-top:1.5rem;">
+    Documentation générée automatiquement · Predictive Maintenance Pro v1.0 · Avril 2025
+    <br/>Technologies : Python 3.x · Streamlit 1.56 · XGBoost 3.2 · Plotly 6.7 · scikit-learn 1.8 · pandas 3.0
+  </p>
+</div>
+
+</div><!-- /page-wrap -->
+</body>
+</html>

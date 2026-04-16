@@ -1,0 +1,13 @@
+# requirements.txt — Predictive Maintenance Pro
+# Versions figées pour garantir la reproductibilité et la sécurité de la chaîne d'approvisionnement.
+# Mettre à jour après validation en environnement de test (pip install -U <package>).
+
+streamlit==1.56.0
+pandas==3.0.2
+numpy==2.4.4
+xgboost==3.2.0
+scikit-learn==1.8.0
+plotly==6.7.0
+openpyxl==3.1.5
+matplotlib==3.10.8
+seaborn==0.13.2
