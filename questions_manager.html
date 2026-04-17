@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Questions Manager — Predictive Maintenance Pro</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Calibri, Arial, sans-serif;
+    font-size: 11pt;
+    background: #f0f4ff;
+    color: #1a1a2e;
+    padding: 40px 20px 60px;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #4361ee 100%);
+    color: white;
+    border-radius: 14px;
+    padding: 36px 40px;
+    margin-bottom: 36px;
+    text-align: center;
+  }
+  .header h1 { font-size: 22pt; margin-bottom: 8px; }
+  .header p  { font-size: 10.5pt; opacity: 0.85; }
+
+  /* ── STATS BAR ── */
+  .stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+  .stat-card {
+    flex: 1;
+    min-width: 140px;
+    background: white;
+    border-radius: 10px;
+    padding: 16px 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(67,97,238,.12);
+  }
+  .stat-card .num {
+    font-size: 22pt;
+    font-weight: bold;
+    color: #4361ee;
+  }
+  .stat-card .lbl {
+    font-size: 9pt;
+    color: #666;
+    margin-top: 2px;
+  }
+
+  /* ── SECTION ── */
+  .section {
+    margin-bottom: 28px;
+  }
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #4361ee;
+    color: white;
+    border-radius: 10px 10px 0 0;
+    padding: 12px 20px;
+    font-size: 12pt;
+    font-weight: bold;
+  }
+  .section-title .icon { font-size: 16pt; }
+
+  /* ── QA CARD ── */
+  .qa-card {
+    background: white;
+    border-left: 4px solid #4361ee;
+    margin-bottom: 0;
+    border-bottom: 1px solid #e8eeff;
+  }
+  .qa-card:last-child {
+    border-radius: 0 0 10px 10px;
+    border-bottom: none;
+  }
+  .qa-card.danger { border-left-color: #ef4444; }
+  .qa-card.danger .question { background: #fff5f5; }
+  .qa-card.danger .q-label { color: #ef4444; }
+
+  .question {
+    background: #f7f9ff;
+    padding: 14px 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    transition: background .15s;
+  }
+  .question:hover { background: #eef1ff; }
+
+  .q-label {
+    font-size: 8pt;
+    font-weight: bold;
+    color: #4361ee;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    white-space: nowrap;
+    margin-top: 2px;
+  }
+  .q-text {
+    font-weight: bold;
+    font-size: 10.5pt;
+    flex: 1;
+    line-height: 1.4;
+  }
+  .chevron {
+    font-size: 12pt;
+    color: #4361ee;
+    transition: transform .2s;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .qa-card.open .chevron { transform: rotate(180deg); }
+
+  .answer {
+    display: none;
+    padding: 16px 20px 18px 20px;
+    font-size: 10.5pt;
+    line-height: 1.65;
+    color: #1a1a2e;
+    border-top: 1px dashed #d0d8ff;
+  }
+  .qa-card.open .answer { display: block; }
+
+  .answer strong { color: #4361ee; }
+  .answer code {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: Consolas, monospace;
+    font-size: 9.5pt;
+  }
+  .answer ul { margin: 8px 0 4px 20px; }
+  .answer ul li { margin-bottom: 4px; }
+
+  .tip {
+    display: inline-block;
+    background: #eef2ff;
+    border-left: 3px solid #4361ee;
+    padding: 8px 12px;
+    border-radius: 0 6px 6px 0;
+    font-size: 9.5pt;
+    margin-top: 10px;
+    color: #3a0ca3;
+  }
+  .tip::before { content: "💡 Conseil : "; font-weight: bold; }
+
+  /* ── PIÈGE ── */
+  .trap-section .section-title { background: #ef4444; }
+  .trap-section .qa-card { border-left-color: #ef4444; }
+  .trap-section .chevron,
+  .trap-section .q-label { color: #ef4444; }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    color: #999;
+    font-size: 9pt;
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid #dde3ff;
+  }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .question { cursor: default; }
+    .answer { display: block !important; }
+    .chevron { display: none; }
+    .qa-card { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>🎤 Questions Manager</h1>
+    <p>Predictive Maintenance Pro — Préparez vos réponses pour la présentation</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-card"><div class="num">21</div><div class="lbl">Questions</div></div>
+    <div class="stat-card"><div class="num">6</div><div class="lbl">Thèmes</div></div>
+    <div class="stat-card"><div class="num">1</div><div class="lbl">Question piège</div></div>
+    <div class="stat-card"><div class="num">↓</div><div class="lbl">Cliquez pour les réponses</div></div>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section">
+    <div class="section-title"><span class="icon">💼</span> Démarche &amp; valeur métier</div>
+
+    <div class="qa-card">
+      <div class="question" onclick="toggle(this)">
+        <span class="q-label">Stratégie</span>
+        <span class="q-text">Pourquoi de la maintenance prédictive plutôt que préventive classique ?</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="answer">
+        La maintenance préventive intervient selon un <strong>calendrier fixe</strong> — elle peut intervenir trop tôt (gaspillage de ressources) ou trop tard (panne déjà survenue). La maintenance prédictive utilise les <strong>données réelles de chaque équipement</strong> pour intervenir au bon moment. Résultat : moins de downtime non planifié et meilleure allocation des ressources de maintenance.
+        <div class="tip">Appuyez sur le graphique "Évolution du ratio préventif mensuel" dans l'onglet Rapports pour illustrer la tendance.</div>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="question" onclick="toggle(this)">
+        <span class="q-label">ROI</span>
+        <span class="q-text">Quel est le gain concret pour l'entreprise ?</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="answer">
+        On identifie les équipements à risque <strong>avant la panne</strong>. Le tableau de planification indique exactement quand intervenir. Cela permet de :
+        <ul>
+          <li>Réduire le downtime non planifié</li>
+          <li>Prioriser les budgets de maintenance sur les équipements qui en ont vraiment besoin</li>
+          <li>Anticiper les besoins en pièces de rechange et en techniciens</li>
+        </ul>
+        <div class="tip">Montrez le KPI "Downtime total" dans l'onglet Vue d'ensemble et les équipements du Top 15 dans l'onglet Rapports.</div>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="question" onclick="toggle(this)">
+        <span class="q-label">Données</span>
+        <span class="q-text">Sur quelles données repose l'analyse ?</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="answer">
+        Deux sources de données :
+        <ul>
+          <li><strong>Inventaire des équipements</strong> : caractéristiques physiques, conditions opérationnelles, âge, type</li>
+          <li><strong>Historique de maintenance sur 3 ans</strong> : chaque intervention corrective (CM) et préventive (PM) avec dates, durées, types, criticité</li>
+        </ul>
+        Le parc compte <strong>80 équipements</strong>, représentant plusieurs milliers d'opérations de maintenance.
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section">
+    <div class="section-title"><span class="icon">🤖</span> Modèle Machine Learning</div>
+
+    <div class="qa-card">
+      <div class="question" onclick="toggle(this)">
+        <span class="q-label">Choix algo</span>
+        <span class="q-text">Pourquoi XGBoost et pas un autre algorithme ?</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="answer">
+        XGBoost est l'algorithme de référence pour les <strong>données tabulaires de taille moyenne</strong>. Trois raisons principales :
+        <ul>
+          <li>Gère nativement les features mixtes (numériques + catégorielles encodées)</li>
+          <li>Robuste au bruit et aux valeurs manquantes</li>
+          <li>Fournit une <strong>importance des variables</strong> — ce qui permet d'expliquer les prédictions aux équipes terrain</li>
+        </ul>
+        Sur notre dataset, il atteint <strong>AUC = 0.990</strong> — confirmant a posteriori la pertinence du choix.
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="question" onclick="toggle(this)">
+        <span class="q-label">Taille dataset</span>
+        <span class="q-text">Avec seulement 80 équipements, le modèle n'est-il pas trop limité ?</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="answer">
+        C'est une <strong>limite réelle et assumée</strong>. On la compense par trois mesures :
+        <ul>
+          <li><strong>Cross-validation 5 folds</strong> : chaque équipement est utilisé à la fois pour l'entraînement et le test — on exploite 100% des données</li>
+          <li><strong>Feature engineering soigné</strong> : 22 variables bien construites valent mieux que 5 variables brutes</li>
+          <li><strong>Hyperparamètres conservateurs</strong> : <code>max_depth=4</code> pour limiter le surapprentissage</li>
+        </ul>
+        <div class="tip">Si on ajoute de nouveaux équipements au parc, le modèle s'améliorera automatiquement.</div>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="question" onclick="toggle(this)">
+        <span class="q-label">Objectif</span>
+        <span class="q-text">Que prédit exactement le modèle ?</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="answer">
+        Il classe chaque équipement comme <strong>"haute fréquence de pannes"</strong> (au-dessus de la médiane du parc) ou non. C'est une <em>classification binaire supervisée</em> — pas une prédiction de date exacte, mais un <strong>signal de priorité relative</strong> au sein du parc.
+        <div class="tip">La date exacte de prochaine panne est calculée séparément via le MTBF — ce sont deux mécanismes distincts.</div>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="question" onclick="toggle(this)">
+        <span class="q-label">Performance</span>
+        <span class="q-text">AUC de 0.990 — n'est-ce pas suspect ? Est-ce du surapprentissage ?</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="answer">
+        La question est légitime. On l'a vérifiée de deux façons :
+        <ul>
+          <li>Le <strong>score CV 5 folds</strong> est proche du score test avec un faible écart-type — ce qui confirme la stabilité</li>
+          <li>Les features sont <strong>fortement prédictives par nature</strong> : elles capturent directement l'historique de fiabilité de chaque machine</li>
+        </ul>
+        Un équipement qui tombe en panne 8 fois/an sera toujours au-dessus de la médiane — la relation est quasi-déterministe, d'où l'AUC élevée.
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="question" onclick="toggle(this)">
+        <span class="q-label">Explicabilité</span>
+        <span class="q-text">Quelle est la variable la plus importante du modèle ?</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="answer">
+        Le graphique d'importance des variables dans l'onglet <strong>Modèle prédictif</strong> le montre précisément. En règle générale, les variables qui dominent sont :
+        <ul>
+          <li><code>cm_per_year</code> — fréquence annuelle des pannes</li>
+          <li><code>mtbf_days</code> — temps moyen entre pannes</li>
+          <li><code>cm_last_6m</code> — tendance récente de dégradation</li>
+        </ul>
+        Ce sont les signaux les plus directs de fiabilité d'un équipement.
+        <div class="tip">Montrez le graphique en direct lors de la présentation — c'est plus percutant que de l'expliquer à l'oral.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section">
+    <div class="section-title"><span class="icon">📊</span> Score de risque composite</div>
+
+    <div class="qa-card">
+      <div class="question" onclick="toggle(this)">
+        <span class="q-label">Conception</span>
+        <span class="q-text">Pourquoi un score composite si vous avez déjà la probabilité ML ?</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="answer">
+        La probabilité ML est un signal statistique. Le score composite intègre des dimensions que le modèle seul ne capture pas :
+        <ul>
+          <li>Le <strong>downtime opérationnel réel</strong> (impact business)</li>
+          <li>La <strong>criticité des pannes passées</strong> (sévérité)</li>
+          <li>Le <strong>respect du plan de maintenance préventive</strong> (facteur aggravant)</li>
+        </ul>
+        Un équipement peut avoir une probabilité ML modeste mais un downtime énorme — il mérite quand même une priorité élevée.
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="question" onclick="toggle(this)">
+        <span class="q-label">Paramétrage</span>
+        <span class="q-text">Comment avez-vous fixé les seuils Critique / Modéré / Faible ?</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="answer">
+        Ils sont calibrés sur la <strong>distribution des scores du parc</strong> (percentiles) et validés par rapport à l'historique connu. Ils sont entièrement paramétrables dans le fichier <code>config/settings.py</code> — si les équipes métier veulent les ajuster, c'est <strong>une seule ligne à modifier</strong>.
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="question" onclick="toggle(this)">
+        <span class="q-label">Pondération</span>
+        <span class="q-text">Les pondérations (30%, 20%…) sont-elles justifiées scientifiquement ?</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="answer">
+        Elles reflètent l'<strong>importance relative des signaux</strong> selon une logique métier :
+        <ul>
+          <li>La probabilité ML porte 30% car c'est le signal le plus objectif et global</li>
+          <li>Les pannes récentes (15%) pèsent plus que la non-compliance PM (5%) car elles indiquent une dégradation en cours</li>
+        </ul>
+        Ces poids peuvent être revus avec les experts métier — c'est l'avantage d'un score transparent vs une "boîte noire".
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section">
+    <div class="section-title"><span class="icon">🏗️</span> Architecture technique</div>
+
+    <div class="qa-card">
+      <div class="question" onclick="toggle(this)">
+        <span class="q-label">Outil</span>
+        <span class="q-text">Pourquoi Streamlit et non Power BI ou Tableau ?</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="answer">
+        Trois raisons techniques :
+        <ul>
+          <li>Streamlit permet d'<strong>intégrer directement le modèle ML</strong> dans l'interface — Power BI ne peut pas entraîner un XGBoost</li>
+          <li>Tout est en Python, la même langue que le modèle — pas de transfert de données entre outils</li>
+          <li>Déployable sur un serveur interne <strong>sans licence tierce</strong> (open source)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="question" onclick="toggle(this)">
+        <span class="q-label">Sécurité</span>
+        <span class="q-text">L'application est-elle sécurisée ?</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="answer">
+        Un <strong>audit de sécurité complet</strong> a été réalisé. Six catégories vérifiées :
+        <ul>
+          <li>Protection XSS sur les données injectées en HTML (<code>html.escape()</code>)</li>
+          <li>Suppression d'une boucle infinie potentielle dans le calcul de planning</li>
+          <li>Suppression ciblée des warnings (pas de masquage global)</li>
+          <li>Dépendances fixées dans <code>requirements.txt</code></li>
+          <li>Chemins de fichiers codés en dur (pas d'input utilisateur)</li>
+          <li>Aucun pickle — le modèle est réentraîné à chaque session via le cache Streamlit</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="question" onclick="toggle(this)">
+        <span class="q-label">Intégration</span>
+        <span class="q-text">Peut-on connecter l'application à notre ERP ou GMAO ?</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="answer">
+        Oui. Le module <code>data_loader.py</code> est le <strong>seul point d'accès aux données</strong>. Il suffit de remplacer la lecture Excel par une connexion SQL ou API — le reste de l'application est totalement indépendant de la source de données.
+        <div class="tip">C'est précisément l'avantage de l'architecture modulaire choisie.</div>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="question" onclick="toggle(this)">
+        <span class="q-label">Maintenance</span>
+        <span class="q-text">Si on veut changer un seuil ou une couleur, qui touche à quoi ?</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="answer">
+        Un seul fichier : <code>config/settings.py</code>. Tous les paramètres métier sont centralisés là — seuils de risque, couleurs, pondérations, liste des features. <strong>Aucun autre fichier à modifier.</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section">
+    <div class="section-title"><span class="icon">🗺️</span> Limites &amp; roadmap</div>
+
+    <div class="qa-card">
+      <div class="question" onclick="toggle(this)">
+        <span class="q-label">Honnêteté</span>
+        <span class="q-text">Quelles sont les limites actuelles de l'application ?</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="answer">
+        Trois limites honnêtes :
+        <ul>
+          <li>Le modèle est <strong>réentraîné à chaque lancement</strong> — en production il faudrait un pipeline d'entraînement séparé et planifié</li>
+          <li><strong>80 équipements</strong> est un dataset limité ; les performances s'amélioreront avec plus de données</li>
+          <li>Pas d'<strong>authentification utilisateur</strong> pour l'instant</li>
+        </ul>
+        <div class="tip">Reconnaître les limites démontre la maturité technique — c'est toujours apprécié par un manager.</div>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="question" onclick="toggle(this)">
+        <span class="q-label">Évolution</span>
+        <span class="q-text">Que faudrait-il pour passer en production ?</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="answer">
+        Cinq étapes :
+        <ul>
+          <li>Connexion à la GMAO en <strong>temps réel</strong></li>
+          <li>Pipeline d'entraînement automatisé (hebdomadaire ou mensuel)</li>
+          <li><strong>Authentification</strong> utilisateur (rôles : viewer, admin)</li>
+          <li>Déploiement sur serveur interne (Streamlit Cloud ou Docker)</li>
+          <li>Monitoring des performances du modèle dans le temps (<em>model drift</em>)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="question" onclick="toggle(this)">
+        <span class="q-label">Durabilité</span>
+        <span class="q-text">Le modèle se dégrade-t-il dans le temps ?</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="answer">
+        Tout modèle se dégrade si les données évoluent — c'est le phénomène de <strong>model drift</strong>. Des causes possibles : nouveaux équipements, nouveaux types de pannes, changement de processus. Il faut prévoir :
+        <ul>
+          <li>Un réentraînement régulier (mensuel ou trimestriel)</li>
+          <li>Un monitoring de l'AUC en production</li>
+          <li>Des alertes si les performances descendent sous un seuil critique</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 6 — PIÈGE -->
+  <div class="section trap-section">
+    <div class="section-title"><span class="icon">⚠️</span> La question piège</div>
+
+    <div class="qa-card danger">
+      <div class="question" onclick="toggle(this)">
+        <span class="q-label" style="color:#ef4444;">Piège</span>
+        <span class="q-text">Si le modèle dit qu'un équipement est à faible risque et qu'il tombe en panne, que se passe-t-il ?</span>
+        <span class="chevron" style="color:#ef4444;">▼</span>
+      </div>
+      <div class="answer">
+        Le modèle est un <strong>outil d'aide à la décision, pas un oracle</strong>. Il réduit le risque d'être pris par surprise — il ne l'élimine pas. C'est pourquoi :
+        <ul>
+          <li>Le score composite intègre plusieurs signaux indépendants pour plus de robustesse</li>
+          <li>L'expertise des techniciens terrain reste une source d'information complémentaire indispensable</li>
+          <li>Les seuils de risque sont volontairement conservateurs pour limiter les faux négatifs</li>
+        </ul>
+        <strong>Aucun modèle prédictif ne garantit 0 panne surprise.</strong> L'objectif est de passer d'une maintenance réactive à une maintenance principalement anticipée.
+        <div class="tip">Ne jamais promettre 100% de précision — c'est la réponse qui rassure le plus un manager technique.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Predictive Maintenance Pro — Questions Manager &nbsp;|&nbsp; Avril 2026 &nbsp;|&nbsp; Cliquez sur chaque question pour afficher la réponse
+  </div>
+
+</div>
+
+<script>
+  function toggle(questionEl) {
+    const card = questionEl.parentElement;
+    card.classList.toggle('open');
+  }
+</script>
+</body>
+</html>

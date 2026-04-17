@@ -113,20 +113,60 @@ def render(
 
     # ── Documentation technique ───────────────────────────
     st.markdown("---")
-    st.markdown("#### 📖 Documentation technique")
-    try:
-        with open("documentation_technique.html", "r", encoding="utf-8") as f:
-            doc_html = f.read()
-        st.download_button(
-            label="📄 Télécharger la documentation technique (HTML)",
-            data=doc_html,
-            file_name="documentation_technique_predictive_maintenance.html",
-            mime="text/html",
-            width="stretch",
-        )
-        st.caption(
-            "Ouvrez le fichier dans votre navigateur, puis utilisez "
-            "Ctrl+P → Enregistrer en PDF pour obtenir un PDF imprimable."
-        )
-    except FileNotFoundError:
-        st.info("Fichier documentation_technique.html introuvable.")
+    st.markdown("#### 📖 Documentation & Guide de présentation")
+
+    dl1, dl2, dl3 = st.columns(3)
+
+    with dl1:
+        try:
+            with open("documentation_technique.html", "r", encoding="utf-8") as f:
+                doc_html = f.read()
+            st.download_button(
+                label="📄 Documentation technique (HTML)",
+                data=doc_html,
+                file_name="documentation_technique_predictive_maintenance.html",
+                mime="text/html",
+                width="stretch",
+            )
+            st.caption(
+                "Ouvrez le fichier dans votre navigateur, puis utilisez "
+                "Ctrl+P → Enregistrer en PDF pour obtenir un PDF imprimable."
+            )
+        except FileNotFoundError:
+            st.info("Fichier documentation_technique.html introuvable.")
+
+    with dl2:
+        try:
+            with open("guide_presentation.html", "r", encoding="utf-8") as f:
+                guide_html = f.read()
+            st.download_button(
+                label="🎤 Guide de présentation (Word/HTML)",
+                data=guide_html,
+                file_name="guide_presentation_predictive_maintenance.html",
+                mime="text/html",
+                width="stretch",
+            )
+            st.caption(
+                "Ouvrez le fichier dans Word (Fichier → Ouvrir) pour obtenir "
+                "un document .docx, ou dans le navigateur pour le lire directement."
+            )
+        except FileNotFoundError:
+            st.info("Fichier guide_presentation.html introuvable.")
+
+    with dl3:
+        try:
+            with open("questions_manager.html", "r", encoding="utf-8") as f:
+                questions_html = f.read()
+            st.download_button(
+                label="❓ Questions Manager (HTML interactif)",
+                data=questions_html,
+                file_name="questions_manager_predictive_maintenance.html",
+                mime="text/html",
+                width="stretch",
+            )
+            st.caption(
+                "Ouvrez dans le navigateur. Cliquez sur chaque question "
+                "pour afficher la réponse recommandée."
+            )
+        except FileNotFoundError:
+            st.info("Fichier questions_manager.html introuvable.")
