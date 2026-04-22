@@ -39,20 +39,25 @@ def load_data() -> tuple[pd.DataFrame, pd.DataFrame]:
 def apply_filters(
     df_equip: pd.DataFrame,
     df_maint: pd.DataFrame,
-    selected_types: list[str],
-    selected_tiers: list[str],
+    selected_type: str | None,
+    selected_tier: str | None,
+    selected_equip: str | None,
     date_start: pd.Timestamp,
     date_end: pd.Timestamp,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Applique les filtres de la sidebar et retourne les sous-ensembles filtrés.
-    Les deux DataFrames restent cohérents (df_maint ne contient que les
-    équipements présents dans df_equip filtré).
+    Une valeur None signifie "pas de filtre" (= tous).
+    Les deux DataFrames restent cohérents entre eux.
     """
-    df_eq_f = df_equip[
-        df_equip["equipment_type"].isin(selected_types) &
-        df_equip["cost_tier"].isin(selected_tiers)
-    ].copy()
+    df_eq_f = df_equip.copy()
+
+    if selected_type is not None:
+        df_eq_f = df_eq_f[df_eq_f["equipment_type"] == selected_type]
+    if selected_tier is not None:
+        df_eq_f = df_eq_f[df_eq_f["cost_tier"] == selected_tier]
+    if selected_equip is not None:
+        df_eq_f = df_eq_f[df_eq_f["equipment_id"] == selected_equip]
 
     df_m_f = df_maint[
         df_maint["equipment_id"].isin(df_eq_f["equipment_id"]) &
@@ -60,4 +65,4 @@ def apply_filters(
         (df_maint["equipment_stop_time"] <= date_end)
     ].copy()
 
-    return df_eq_f, df_m_f
+    return df_eq_f.copy(), df_m_f

@@ -12,6 +12,7 @@ from modules.charts import (
     chart_monthly_cm,
     chart_operation_heatmap,
 )
+from modules.filters import render_filters
 from modules.styles import kpi_card, section_header
 
 
@@ -20,15 +21,18 @@ def render(
     df_maint: pd.DataFrame,
     eq_stats: pd.DataFrame,
 ) -> None:
-    """
-    Affiche le tableau de bord Vue d'ensemble.
+    section_header("📊 Vue d'ensemble du parc machine")
 
-    Paramètres
-    ----------
-    df_equip  : équipements filtrés
-    df_maint  : opérations de maintenance filtrées
-    eq_stats  : statistiques agrégées par équipement (avec risk_score, risk_level…)
-    """
+    f = render_filters(eq_stats, key="overview", df_maint=df_maint, df_equip=df_equip, show_date=True)
+    eq_stats = f["eq_stats"]
+    df_maint = f["df_maint"]
+    df_equip = f["df_equip"]
+
+    if eq_stats.empty:
+        st.warning("Aucun équipement ne correspond aux filtres sélectionnés.")
+        return
+
+    st.markdown("---")
     cm_df = df_maint[~df_maint["is_planned"]]
     pm_df = df_maint[df_maint["is_planned"]]
 

@@ -8,19 +8,21 @@ import pandas as pd
 import streamlit as st
 
 from modules.charts import chart_risk_bar, chart_risk_matrix
+from modules.filters import render_filters
 from modules.styles import fmt_days, fmt_mtbf, kpi_card, section_header
 
 
 def render(eq_stats: pd.DataFrame) -> None:
-    """
-    Affiche l'onglet Santé des équipements.
-
-    Paramètre
-    ---------
-    eq_stats : DataFrame enrichi (risk_score, risk_level, mtbf_days…)
-    """
     section_header("🔍 Analyse de la santé du parc machine")
 
+    f = render_filters(eq_stats, key="health")
+    eq_stats = f["eq_stats"]
+
+    if eq_stats.empty:
+        st.warning("Aucun équipement ne correspond aux filtres sélectionnés.")
+        return
+
+    st.markdown("---")
     # ── Compteurs par niveau de risque ────────────────────
     tot = len(eq_stats)
     n_c = (eq_stats["risk_level"] == "Critique").sum()

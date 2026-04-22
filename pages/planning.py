@@ -9,6 +9,7 @@ import streamlit as st
 
 from config.settings import COLORS, PRIORITY_LABELS, REF_DATE
 from modules.charts import chart_gantt
+from modules.filters import render_filters
 from modules.styles import fmt_date, fmt_mtbf, reco_card, section_header
 
 
@@ -26,15 +27,16 @@ def _build_plan(eq_stats: pd.DataFrame) -> pd.DataFrame:
 
 
 def render(eq_stats: pd.DataFrame) -> None:
-    """
-    Affiche l'onglet Planification de la maintenance.
-
-    Paramètre
-    ---------
-    eq_stats : DataFrame enrichi (risk_score, risk_level, next_failure, rec_pm…)
-    """
     section_header("📅 Planification intelligente de la maintenance")
 
+    f = render_filters(eq_stats, key="planning")
+    eq_stats = f["eq_stats"]
+
+    if eq_stats.empty:
+        st.warning("Aucun équipement ne correspond aux filtres sélectionnés.")
+        return
+
+    st.markdown("---")
     plan = _build_plan(eq_stats)
 
     # ── Alertes ───────────────────────────────────────────

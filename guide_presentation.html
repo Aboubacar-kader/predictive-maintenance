@@ -174,6 +174,7 @@
     <li><a href="#settings">config/settings.py — La source de vérité unique</a></li>
     <li><a href="#data_loader">modules/data_loader.py — La couche d'accès aux données</a></li>
     <li><a href="#feature_engineering">modules/feature_engineering.py — La transformation des données &amp; les 22 variables</a></li>
+    <li><a href="#variable_cible">Variable cible, métriques &amp; score de risque — Questions clés</a></li>
     <li><a href="#ml_model">modules/ml_model.py — Le moteur prédictif</a></li>
     <li><a href="#styles">modules/styles.py — L'habillage visuel</a></li>
     <li><a href="#charts">modules/charts.py — Les 15 visualisations</a></li>
@@ -498,9 +499,198 @@ target = 0  sinon                      →  "fréquence normale ou faible"</pre>
 
 <hr>
 
+<!-- VARIABLE CIBLE & MÉTRIQUES & SCORE RISQUE -->
+<div class="page-break"></div>
+<h2 id="variable_cible">6. Variable cible, métriques &amp; score de risque — Questions clés</h2>
+
+<!-- ──────────────────────────────────────────────────── -->
+<h3>6.1 La variable cible — Qu'est-ce que le modèle cherche à prédire ?</h3>
+
+<p>Le modèle XGBoost résout un problème de <strong>classification binaire supervisée</strong>. Il apprend à distinguer deux catégories d'équipements :</p>
+
+<table>
+  <tr><th>Valeur cible</th><th>Signification</th><th>Critère</th></tr>
+  <tr>
+    <td style="text-align:center"><strong>1</strong></td>
+    <td>Équipement à <strong>haute fréquence de pannes</strong></td>
+    <td><code>cm_per_year &gt; médiane du parc</code></td>
+  </tr>
+  <tr>
+    <td style="text-align:center"><strong>0</strong></td>
+    <td>Équipement à fréquence normale ou faible</td>
+    <td><code>cm_per_year ≤ médiane du parc</code></td>
+  </tr>
+</table>
+
+<pre>médiane = médiane de cm_per_year sur les 80 équipements
+target = 1  si cm_per_year &gt; médiane   →  "haute fréquence de pannes"
+target = 0  sinon                       →  "fréquence normale ou faible"</pre>
+
+<h4>Pourquoi avoir choisi cette variable cible ?</h4>
+<ul>
+  <li><strong>Disponibilité :</strong> <code>cm_per_year</code> est calculable directement depuis l'historique — pas besoin d'étiquetage manuel.</li>
+  <li><strong>Pertinence métier :</strong> La fréquence de pannes est l'indicateur le plus direct du coût de maintenance et du risque opérationnel.</li>
+  <li><strong>Classes équilibrées :</strong> En utilisant la médiane comme seuil, on obtient exactement 50% de "1" et 50% de "0" — condition idéale pour l'apprentissage, qui évite le biais vers la classe majoritaire.</li>
+</ul>
+
+<h4>Pourquoi la médiane et non un seuil fixe ?</h4>
+<p>Un seuil fixe (ex: "plus de 5 pannes/an") dépendrait du parc spécifique. Si le parc change (nouveaux équipements plus fiables), le seuil deviendrait obsolète. La médiane s'adapte automatiquement à la composition du parc — elle classe toujours les 50% d'équipements les plus défaillants comme "à risque élevé".</p>
+
+<div class="callout">
+<strong>Ce que le modèle NE prédit PAS :</strong> il ne prédit pas une date exacte de panne. Il identifie les équipements structurellement plus susceptibles de tomber en panne fréquemment. La date de prochaine panne est calculée séparément via le MTBF.
+</div>
+
+<hr>
+
+<!-- ──────────────────────────────────────────────────── -->
+<h3>6.2 Les métriques d'évaluation — Pourquoi ces indicateurs ?</h3>
+
+<p>Deux métriques principales ont été choisies pour évaluer les performances du modèle :</p>
+
+<table>
+  <tr><th style="width:20%">Métrique</th><th style="width:30%">Ce qu'elle mesure</th><th style="width:25%">Résultat obtenu</th><th style="width:25%">Pourquoi ce choix</th></tr>
+  <tr>
+    <td><strong>Précision (Accuracy)</strong></td>
+    <td>Proportion d'équipements correctement classés (classe 0 et classe 1 confondues)</td>
+    <td>~95%</td>
+    <td>Indicateur global simple, compréhensible par tous. Valable ici car les classes sont équilibrées (50/50).</td>
+  </tr>
+  <tr>
+    <td><strong>AUC-ROC</strong></td>
+    <td>Capacité du modèle à distinguer les vrais positifs des faux positifs, pour tous les seuils de décision possibles. Une valeur de 1.0 = discrimination parfaite, 0.5 = modèle aléatoire.</td>
+    <td>~0.990 (test) ~0.985 (CV)</td>
+    <td>Métrique standard en classification médicale et industrielle. Plus robuste que la précision car indépendante du seuil de décision choisi.</td>
+  </tr>
+</table>
+
+<h4>Pourquoi l'AUC-ROC plutôt que la précision seule ?</h4>
+<p>La précision peut être trompeuse : un modèle qui prédit toujours "0" sur un dataset déséquilibré obtiendrait 80% de précision sans rien apprendre. L'AUC-ROC mesure la qualité intrinsèque de la séparation entre classes. Ici, AUC = 0.990 signifie que si on choisit aléatoirement un équipement à haute fréquence et un équipement à basse fréquence, le modèle identifie correctement lequel est lequel dans <strong>99% des cas</strong>.</p>
+
+<h4>Pourquoi la cross-validation 5 folds ?</h4>
+<p>Avec seulement 80 équipements, un simple split 75/25 risque de dépendre du hasard de la répartition. La cross-validation divise le dataset en 5 groupes égaux (16 équipements chacun), entraîne le modèle sur 4 groupes et teste sur le 5ème — puis répète 5 fois en changeant le groupe de test. Résultat : <strong>chaque équipement est testé exactement une fois</strong>, et on obtient 5 scores indépendants dont on calcule la moyenne et l'écart-type.</p>
+
+<table>
+  <tr><th>Indicateur CV</th><th>Valeur</th><th>Interprétation</th></tr>
+  <tr><td>AUC-ROC moyen (5 folds)</td><td>~0.985</td><td>Performance stable sur l'ensemble du parc</td></tr>
+  <tr><td>Écart-type (±)</td><td>~0.010</td><td>Faible variance = pas de surapprentissage sur un sous-ensemble</td></tr>
+</table>
+
+<div class="callout">
+<strong>Règle simple :</strong> Si AUC(test) ≈ AUC(CV) avec un faible écart-type → le modèle généralise bien. Si AUC(test) ≫ AUC(CV) → il a mémorisé les données d'entraînement (surapprentissage). Notre cas : AUC test ≈ AUC CV → modèle sain.
+</div>
+
+<hr>
+
+<!-- ──────────────────────────────────────────────────── -->
+<h3>6.3 Probabilité ML vs Score de risque — Quelle différence ?</h3>
+
+<p>Ce sont deux choses <strong>fondamentalement différentes</strong>, même si elles sont liées.</p>
+
+<table>
+  <tr><th style="width:30%"></th><th style="width:35%">Probabilité ML</th><th style="width:35%">Score de risque composite</th></tr>
+  <tr>
+    <td><strong>Nature</strong></td>
+    <td>Sortie statistique du modèle XGBoost</td>
+    <td>Indicateur métier multi-dimensionnel</td>
+  </tr>
+  <tr>
+    <td><strong>Plage de valeurs</strong></td>
+    <td>0 à 1 (probabilité)</td>
+    <td>0 à 100 (score lisible)</td>
+  </tr>
+  <tr>
+    <td><strong>Ce qu'il mesure</strong></td>
+    <td>La probabilité que l'équipement appartienne à la classe "haute fréquence de pannes" — selon les 22 patterns appris</td>
+    <td>Le risque global de l'équipement en combinant plusieurs dimensions métier</td>
+  </tr>
+  <tr>
+    <td><strong>Basé sur</strong></td>
+    <td>Les 22 variables d'entrée, traitées par les 150 arbres XGBoost</td>
+    <td>7 composantes dont la probabilité ML (30%), mais aussi le downtime, les pannes récentes, la criticité…</td>
+  </tr>
+  <tr>
+    <td><strong>Avantage</strong></td>
+    <td>Signal objectif, appris depuis les données</td>
+    <td>Intègre des dimensions que le modèle seul ne capture pas (impact opérationnel, tendance récente)</td>
+  </tr>
+  <tr>
+    <td><strong>Limite</strong></td>
+    <td>"Boîte noire" — difficile à expliquer intuitivement</td>
+    <td>Dépend des pondérations choisies — subjectivité assumée</td>
+  </tr>
+  <tr>
+    <td><strong>Utilisé pour</strong></td>
+    <td>Alimentation du score composite (30%) + graphique "Probabilité par équipement"</td>
+    <td>Classement des équipements, alertes, tableau de planification, recommandations</td>
+  </tr>
+</table>
+
+<div class="quote-box">
+"La probabilité ML dit : 'statistiquement, cet équipement ressemble aux équipements qui tombent souvent en panne'. Le score de risque dit : 'en tenant compte de tout — sa fréquence, son downtime, ses pannes récentes, sa PM — quel est son niveau de danger réel pour l'exploitation ?' Ce sont deux angles complémentaires."
+</div>
+
+<hr>
+
+<!-- ──────────────────────────────────────────────────── -->
+<h3>6.4 Comment le score de risque est-il calculé ?</h3>
+
+<p>Le score est une <strong>somme pondérée de 7 composantes normalisées</strong>, multiplié par 100 pour obtenir un score lisible de 0 à 100.</p>
+
+<h4>Étape 1 — Normalisation min-max de chaque composante</h4>
+<p>Chaque composante est ramenée sur une échelle commune [0, 1] via la formule :</p>
+<pre>valeur_normalisée = (valeur − min_du_parc) / (max_du_parc − min_du_parc)</pre>
+<p>Cela permet de comparer des grandeurs d'unités différentes (heures de downtime, nombre de pannes, ratio…) sur la même échelle.</p>
+
+<h4>Étape 2 — Calcul du facteur de dépassement MTBF</h4>
+<p>Ce facteur mesure si l'équipement est "en sursis" — c'est-à-dire si le temps écoulé depuis la dernière panne dépasse déjà son MTBF habituel :</p>
+<pre>overdue = (jours_depuis_dernière_panne / MTBF).clip(0, 2) / 2</pre>
+<p>On le plafonne à 2× le MTBF (dépassement au-delà = score maximal sur cette composante).</p>
+
+<h4>Étape 3 — Combinaison pondérée</h4>
+<pre>score_brut =
+    0.30 × probabilité_ML
+  + 0.20 × normalize(cm_per_year)          ← fréquence annuelle de pannes
+  + 0.15 × normalize(cm_last_6m)           ← tendance des 6 derniers mois
+  + 0.10 × overdue                         ← dépassement du MTBF
+  + 0.10 × normalize(high_crit_ratio)      ← sévérité des pannes
+  + 0.10 × normalize(total_downtime_h)     ← impact opérationnel cumulé
+  + 0.05 × normalize(1 − pm_compliance)   ← non-respect de la PM
+
+score_final = (score_brut × 100).clip(0, 100)</pre>
+
+<h4>Étape 4 — Classification en niveaux</h4>
+<table>
+  <tr><th>Niveau</th><th>Seuil</th><th>Action recommandée</th></tr>
+  <tr><td>🔴 <strong>Critique</strong></td><td>Score ≥ 65</td><td>Intervention immédiate</td></tr>
+  <tr><td>🟠 <strong>Modéré</strong></td><td>38 ≤ Score &lt; 65</td><td>Planifier dans les 30 jours</td></tr>
+  <tr><td>🟢 <strong>Faible</strong></td><td>Score &lt; 38</td><td>Surveillance normale</td></tr>
+</table>
+
+<h4>Justification des pondérations</h4>
+<table>
+  <tr><th>Composante</th><th>Poids</th><th>Raisonnement</th></tr>
+  <tr><td>Probabilité ML</td><td>30%</td><td>Signal le plus objectif et global — il synthétise déjà les 22 variables</td></tr>
+  <tr><td>Pannes/an (<code>cm_per_year</code>)</td><td>20%</td><td>Indicateur historique direct — la fréquence passée est le meilleur prédicteur de la fréquence future</td></tr>
+  <tr><td>Pannes récentes (<code>cm_last_6m</code>)</td><td>15%</td><td>Capture une dégradation en cours que l'historique long peut masquer</td></tr>
+  <tr><td>Dépassement MTBF</td><td>10%</td><td>Signal d'urgence : l'équipement est "en sursis"</td></tr>
+  <tr><td>Ratio criticité</td><td>10%</td><td>La sévérité compte autant que la fréquence</td></tr>
+  <tr><td>Downtime cumulé</td><td>10%</td><td>L'impact opérationnel réel — deux pannes de 100h &gt; dix pannes de 1h</td></tr>
+  <tr><td>Non-compliance PM</td><td>5%</td><td>Facteur aggravant mais indirect — un équipement mal entretenu aura déjà plus de pannes</td></tr>
+</table>
+
+<div class="callout">
+<strong>Pourquoi la somme fait 100% ?</strong> C'est une contrainte volontaire pour garder le score interprétable. Si un équipement obtient le maximum sur toutes les composantes, son score sera 100. Chaque poids représente la contribution maximale de cette composante au score final.
+</div>
+
+<div class="quote-box">
+"Le score de risque est transparent et ajustable. Si demain votre expert métier estime que le downtime devrait peser plus que la fréquence de pannes, on augmente son poids de 10% à 20% en une ligne de code. C'est l'avantage d'un score explicite sur un modèle boîte noire."
+</div>
+
+<hr>
+
 <!-- ML MODEL -->
 <div class="page-break"></div>
-<h2 id="ml_model">6. <code>modules/ml_model.py</code> — Le moteur prédictif</h2>
+<h2 id="ml_model">7. <code>modules/ml_model.py</code> — Le moteur prédictif</h2>
 
 <h3>Ce qu'il fait</h3>
 <p>Entraîne le modèle XGBoost, calcule les scores de risque composites, et prédit les dates de prochaine panne.</p>

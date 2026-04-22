@@ -8,21 +8,22 @@ import pandas as pd
 import streamlit as st
 
 from modules.charts import chart_failure_probability, chart_feature_importance, chart_prob_vs_age
+from modules.filters import render_filters
 from modules.ml_model import ModelResult
 from modules.styles import section_header
 
 
 def render(eq_stats: pd.DataFrame, model_res: ModelResult) -> None:
-    """
-    Affiche l'onglet Modèle prédictif.
-
-    Paramètres
-    ----------
-    eq_stats   : DataFrame enrichi (ml_prob, risk_level, age_years…)
-    model_res  : résultat du pipeline d'entraînement XGBoost
-    """
     section_header("🤖 Modèle prédictif XGBoost — Probabilité de défaillance")
 
+    f = render_filters(eq_stats, key="model")
+    eq_stats = f["eq_stats"]
+
+    if eq_stats.empty:
+        st.warning("Aucun équipement ne correspond aux filtres sélectionnés.")
+        return
+
+    st.markdown("---")
     info_col, perf_col = st.columns([1, 2])
 
     # ── Description & métriques ───────────────────────────

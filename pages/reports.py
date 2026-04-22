@@ -17,6 +17,7 @@ from modules.charts import (
     chart_pm_ratio_trend,
     chart_top_failure_causes,
 )
+from modules.filters import render_filters
 from modules.styles import fmt_date, section_header
 
 
@@ -24,19 +25,19 @@ def render(
     df_equip: pd.DataFrame,
     df_maint: pd.DataFrame,
     eq_stats: pd.DataFrame,
-    plan: pd.DataFrame,
 ) -> None:
-    """
-    Affiche l'onglet Tendances & Rapports.
-
-    Paramètres
-    ----------
-    df_equip  : équipements filtrés
-    df_maint  : opérations de maintenance filtrées
-    eq_stats  : statistiques enrichies par équipement
-    plan      : DataFrame de planification (pour l'export)
-    """
     section_header("📈 Tendances historiques & Rapports")
+
+    f = render_filters(eq_stats, key="reports", df_maint=df_maint, df_equip=df_equip, show_date=True)
+    eq_stats = f["eq_stats"]
+    df_maint = f["df_maint"]
+    df_equip = f["df_equip"]
+
+    if eq_stats.empty:
+        st.warning("Aucun équipement ne correspond aux filtres sélectionnés.")
+        return
+
+    st.markdown("---")
 
     # ── Opérations annuelles + Downtime annuel ────────────
     c1, c2 = st.columns(2)
@@ -76,8 +77,12 @@ def render(
         "cm_per_year", "total_downtime_h", "days_to_fail",
     ]].rename(columns={"total_downtime_h": "total_downtime_hours"})
 
-    # Prépare l'export plan (dates formatées)
-    exp_plan = plan.copy()
+    # Prépare l'export plan depuis eq_stats filtré (dates formatées)
+    exp_plan = eq_stats[[
+        "equipment_id", "equipment_type", "risk_level", "risk_score",
+        "days_to_fail", "next_failure", "rec_pm", "last_cm_date", "last_pm_date",
+        "mtbf_days", "cm_per_year",
+    ]].copy()
     for c in ["next_failure", "rec_pm", "last_cm_date", "last_pm_date"]:
         if c in exp_plan.columns:
             exp_plan[c] = exp_plan[c].apply(fmt_date)
